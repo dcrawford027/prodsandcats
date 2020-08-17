@@ -33,7 +33,26 @@ namespace ProductsAndCategories.Controllers
                 .ThenInclude(association => association.Product)
                 .FirstOrDefault(cat => cat.CategoryId == categoryId);
 
-            List<Product> products = db.Products.ToList();
+            List<Product> products = db.Products
+                .Include(prod => prod.Categories)
+                .Where(prod => prod.Categories.Any(cat => cat.CategoryId == categoryId) == false)
+                .ToList();
+
+            List<Association> associations = db.Associations.ToList();
+
+            // foreach (var association in associations)
+            // {
+            //     Product product = association.Product;
+            //     Association relation = category.Products.FirstOrDefault(ass => ass.ProductId == product.ProductId);
+            //     Product relatedProduct = relation == null ? null : relation.Product;
+            //     if (relatedProduct != null)
+            //     {
+            //         products.Remove(relatedProduct);
+            //     }
+
+            // }
+            
+
             ViewBag.Products = products;
 
             return View("Index", category);
@@ -97,7 +116,9 @@ namespace ProductsAndCategories.Controllers
                 .ThenInclude(association => association.Category)
                 .FirstOrDefault(prod => prod.ProductId == productId);
 
-            List<Category> categories = db.Categories.ToList();
+            List<Category> categories = db.Categories
+                .Where(cat => cat.Products.Any(prod => prod.ProductId == productId) == false)
+                .ToList();
             ViewBag.Categories = categories;
 
             return View("Product", product);
